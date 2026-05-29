@@ -3,6 +3,7 @@ package com.example.minitwitter.post.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.minitwitter.auth.security.CurrentUser;
 import com.example.minitwitter.post.dto.PostCreateRequest;
 import com.example.minitwitter.post.dto.PostResponse;
 import com.example.minitwitter.post.dto.TimelineResponse;
@@ -28,11 +29,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class PostController {
 
     private final PostService postService;
+    private final CurrentUser currentUser;
 
     @PostMapping
     public ResponseEntity<PostResponse> createPost(
             @Valid @RequestBody PostCreateRequest request) {
-        PostResponse response = postService.createPost(request);
+
+        Long authorId = currentUser.getId();
+
+        PostResponse response = postService.createPost(authorId, request);
 
         URI location = URI.create("/api/posts/" + response.id());
 
@@ -41,11 +46,6 @@ public class PostController {
                 .body(response);
     }
 
-    // @GetMapping
-    // public List<PostResponse> getPosts() {
-    //     return postService.getPosts();
-    // }
-
     @GetMapping("/{id}")
     public PostResponse getPost(@PathVariable Long id) {
         return postService.getPost(id);
@@ -53,9 +53,8 @@ public class PostController {
 
     @GetMapping
     public List<PostResponse> getPosts(
-        @RequestParam(required = false) Long authorId
-    ){
-        if(authorId != null){
+            @RequestParam(required = false) Long authorId) {
+        if (authorId != null) {
             return postService.getPostsByAuthor(authorId);
         }
 
@@ -69,27 +68,24 @@ public class PostController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(
-            @PathVariable Long id,
-            @RequestParam Long requesterId) {
-
+            @PathVariable Long id) {
+        Long requesterId = currentUser.getId();
         postService.deletePost(id, requesterId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/timeline")
     public TimelineResponse getTimeline(
-        @RequestParam Long userId,
-        @RequestParam(required = false) Long cursor,
-        @RequestParam(defaultValue = "10") int size
-    ){
+            @RequestParam Long userId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size) {
         return postService.getTimeline(userId, cursor, size);
     }
 
     @GetMapping("/feed")
     public TimelineResponse getFeed(
-        @RequestParam(required = false) Long cursor,
-        @RequestParam(defaultValue = "10") int size
-    ){
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size) {
         return postService.getFeed(cursor, size);
     }
 }

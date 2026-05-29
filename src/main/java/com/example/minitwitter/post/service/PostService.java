@@ -29,11 +29,11 @@ public class PostService {
     private final UserRepository userRepository;
 
     @Transactional
-    public PostResponse createPost(PostCreateRequest request) {
-        User author = userRepository.findById(request.authorId())
-                .orElseThrow(() -> new UserNotFoundException(request.authorId()));
-        Post post = new Post(author, request.content());
+    public PostResponse createPost(Long authorId, PostCreateRequest request) {
+        User author = userRepository.findById(authorId)
+                .orElseThrow(() -> new UserNotFoundException(authorId));
 
+        Post post = new Post(author, request.content());
         Post savedPost = postRepository.save(post);
 
         return toResponse(savedPost);
