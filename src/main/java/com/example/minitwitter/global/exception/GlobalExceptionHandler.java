@@ -95,4 +95,12 @@ public class GlobalExceptionHandler {
                                 "INVALID_TIMELINE_SIZE",
                                 exception.getMessage());
         }
+
+        @ResponseStatus(HttpStatus.CONFLICT)
+        @ExceptionHandler(DuplicateLoginIdException.class)
+        public ErrorResponse handleDuplicateLoginId(DuplicateFollowException exception) {
+                return ErrorResponse.of(
+                                "DUPLICATE_LOGIN_ID",
+                                exception.getMessage());
+        }
 }

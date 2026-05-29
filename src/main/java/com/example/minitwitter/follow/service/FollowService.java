@@ -98,6 +98,7 @@ public class FollowService {
         return new FollowUserResponse(
             user.getId(),
             user.getNickName(),
+            user.getProfileImageUrl(),
             user.getBio()
         );
     }

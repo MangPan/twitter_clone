@@ -28,8 +28,10 @@ public class UserProfileService {
 
         return new UserProfileResponse(
                 user.getId(),
+                user.getLoginId(),
                 user.getNickName(),
                 user.getBio(),
+                user.getProfileImageUrl(),
                 postCount,
                 followerCount,
                 followingCount);
