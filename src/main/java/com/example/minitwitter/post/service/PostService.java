@@ -135,6 +135,11 @@ public class PostService {
         );
     }
 
+    // 자신의 timeline 메서드
+    public TimelineResponse getMyTimeline(Long currentUserId, Long cursor, int size){
+        return getTimeline(currentUserId, cursor, size);
+    }
+
     public List<PostResponse> getPostsByAuthor(Long authorId) {
         userRepository.findById(authorId)
                 .orElseThrow(() -> new UserNotFoundException(authorId));

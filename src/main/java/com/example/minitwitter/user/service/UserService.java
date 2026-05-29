@@ -8,14 +8,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.minitwitter.user.domain.User;
+import com.example.minitwitter.user.dto.MeResponse;
 import com.example.minitwitter.user.dto.UserCreateRequest;
-import com.example.minitwitter.user.dto.UserProfileResponse;
 import com.example.minitwitter.user.dto.UserResponse;
 import com.example.minitwitter.user.exception.DuplicateLoginIdException;
 import com.example.minitwitter.user.exception.DuplicateNicknameException;
 import com.example.minitwitter.user.exception.UserNotFoundException;
 import com.example.minitwitter.user.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import lombok.RequiredArgsConstructor;
 
@@ -81,6 +80,19 @@ public class UserService {
             .orElseThrow(() -> new UserNotFoundException(nickName));
 
         return toResponse(user);
+    }
+
+    public MeResponse getMe(Long currentUserId){
+        User user = userRepository.findById(currentUserId)
+            .orElseThrow(() -> new UserNotFoundException(currentUserId));
+
+        return new MeResponse(
+            user.getId(),
+            user.getLoginId(),
+            user.getNickName(),
+            user.getBio(),
+            user.getProfileImageUrl()
+        );
     }
 
 
