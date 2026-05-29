@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.example.minitwitter.user.exception.*;
 import com.example.minitwitter.post.exception.*;
+import com.example.minitwitter.auth.exception.InvalidLoginException;
 import com.example.minitwitter.follow.exception.*;
 
 @RestControllerAdvice
@@ -101,6 +102,14 @@ public class GlobalExceptionHandler {
         public ErrorResponse handleDuplicateLoginId(DuplicateFollowException exception) {
                 return ErrorResponse.of(
                                 "DUPLICATE_LOGIN_ID",
+                                exception.getMessage());
+        }
+
+        @ResponseStatus(HttpStatus.UNAUTHORIZED)
+        @ExceptionHandler(InvalidLoginException.class)
+        public ErrorResponse handleInvalidLogin(InvalidLoginException exception) {
+                return ErrorResponse.of(
+                                "INVALID_LOGIN",
                                 exception.getMessage());
         }
 }
