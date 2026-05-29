@@ -12,6 +12,8 @@ import com.example.minitwitter.user.exception.*;
 import com.example.minitwitter.post.exception.*;
 import com.example.minitwitter.auth.exception.InvalidLoginException;
 import com.example.minitwitter.follow.exception.*;
+import com.example.minitwitter.like.exception.DuplicatePostLikeException;
+import com.example.minitwitter.like.exception.PostLikeNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -110,6 +112,22 @@ public class GlobalExceptionHandler {
         public ErrorResponse handleInvalidLogin(InvalidLoginException exception) {
                 return ErrorResponse.of(
                                 "INVALID_LOGIN",
+                                exception.getMessage());
+        }
+
+        @ResponseStatus(HttpStatus.CONFLICT)
+        @ExceptionHandler(DuplicatePostLikeException.class)
+        public ErrorResponse handleDuplicatePostLike(DuplicatePostLikeException exception) {
+                return ErrorResponse.of(
+                                "DUPLICATE_POST_LIKE",
+                                exception.getMessage());
+        }
+
+        @ResponseStatus(HttpStatus.NOT_FOUND)
+        @ExceptionHandler(PostLikeNotFoundException.class)
+        public ErrorResponse handlePostLikeNotFound(PostLikeNotFoundException exception) {
+                return ErrorResponse.of(
+                                "POST_LIKE_NOT_FOUND",
                                 exception.getMessage());
         }
 }

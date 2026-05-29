@@ -44,6 +44,11 @@ public class Post extends BaseTimeEntity{
         this.likeCount++;
     }
 
+    public void decreaseLikeCount(){
+        if(this.likeCount > 0)
+            this.likeCount--;
+    }
+
     public boolean isAuthor(Long userId){
         return this.author.getId().equals(userId);
     }

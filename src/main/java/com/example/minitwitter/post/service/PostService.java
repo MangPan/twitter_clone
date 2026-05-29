@@ -52,13 +52,6 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponse increaseLikeCount(Long id) {
-        Post post = getPostByIdWithAuthorOrThrow(id);
-        post.increaseLikeCount();
-        return toResponse(post);
-    }
-
-    @Transactional
     public void deletePost(Long id, Long requesterId) {
         Post post = getPostByIdWithAuthorOrThrow(id);
 
