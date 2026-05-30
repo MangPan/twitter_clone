@@ -2,9 +2,11 @@ package com.example.minitwitter.post.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.minitwitter.auth.security.CurrentUser;
 import com.example.minitwitter.post.dto.PostCreateRequest;
+import com.example.minitwitter.post.dto.PostImageUploadResponse;
 import com.example.minitwitter.post.dto.PostResponse;
 import com.example.minitwitter.post.dto.TimelineResponse;
 import com.example.minitwitter.post.service.PostService;
@@ -50,6 +52,16 @@ public class PostController {
     public PostResponse getPost(@PathVariable Long id) {
         return postService.getPost(id);
     }
+
+    @PostMapping("/{id}/images")
+    public PostImageUploadResponse uploadPostImages(
+        @PathVariable Long id,
+        @RequestParam("files") List<MultipartFile> files
+    ){
+        Long currentUserId = currentUser.getId();
+        return postService.uploadPostImages(id, currentUserId, files);
+    } 
+
 
     @GetMapping
     public List<PostResponse> getPosts(

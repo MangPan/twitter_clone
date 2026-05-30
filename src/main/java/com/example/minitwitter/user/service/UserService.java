@@ -6,9 +6,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.example.minitwitter.storage.dto.UploadedFileResponse;
+import com.example.minitwitter.storage.service.StorageService;
 import com.example.minitwitter.user.domain.User;
 import com.example.minitwitter.user.dto.MeResponse;
+import com.example.minitwitter.user.dto.ProfileImageResponse;
 import com.example.minitwitter.user.dto.UserCreateRequest;
 import com.example.minitwitter.user.dto.UserResponse;
 import com.example.minitwitter.user.exception.DuplicateLoginIdException;
@@ -25,6 +29,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final StorageService storageService;
 
 
     /*
@@ -53,6 +58,26 @@ public class UserService {
 
         return toResponse(savedUser);
     }
+
+    /*
+    프로필 사진 업데이트
+    */
+    @Transactional
+    public ProfileImageResponse updateProfileImageResponse(Long currentUserId, MultipartFile file){
+        User user = userRepository.findById(currentUserId)
+            .orElseThrow(() -> new UserNotFoundException(currentUserId));
+        
+        UploadedFileResponse uploadedFile = storageService.uploadImage(
+            file, 
+            "profile/" + currentUserId, 
+            2 * 1024 * 1024);
+        
+        user.updateProfileImageUrl(uploadedFile.url());
+
+        return new ProfileImageResponse(uploadedFile.url());
+    }
+
+
 
 
 

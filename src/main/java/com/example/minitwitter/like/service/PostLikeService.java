@@ -11,9 +11,11 @@ import com.example.minitwitter.like.exception.DuplicatePostLikeException;
 import com.example.minitwitter.like.exception.PostLikeNotFoundException;
 import com.example.minitwitter.like.repository.PostLikeRepository;
 import com.example.minitwitter.post.domain.Post;
+import com.example.minitwitter.post.domain.PostImage;
 import com.example.minitwitter.post.dto.PostResponse;
 import com.example.minitwitter.post.exception.PostAccessDeniedException;
 import com.example.minitwitter.post.exception.PostNotFoundException;
+import com.example.minitwitter.post.repository.PostImageRepository;
 import com.example.minitwitter.post.repository.PostRepository;
 import com.example.minitwitter.user.domain.User;
 import com.example.minitwitter.user.exception.UserNotFoundException;
@@ -29,6 +31,7 @@ public class PostLikeService {
     private final PostLikeRepository postLikeRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final PostImageRepository postImageRepository;
 
     // 좋아요 누름
     @Transactional
@@ -100,11 +103,18 @@ public class PostLikeService {
     }
 
     private PostResponse toPostResponse(Post post) {
+        List<String> imageUrls = postImageRepository.findByPostIdOrderByDisplayOrderAsc(post.getId())
+            .stream()
+            .map(PostImage::getImageUrl)
+            .toList();
+
+
         return new PostResponse(
                 post.getId(),
                 post.getAuthor().getId(),
                 post.getAuthor().getNickName(),
                 post.getContent(),
+                imageUrls,
                 post.getLikeCount(),
                 post.getCreatedAt(),
                 post.getUpdatedAt());

@@ -1,19 +1,27 @@
 package com.example.minitwitter.post.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.minitwitter.post.domain.Post;
+import com.example.minitwitter.post.domain.PostImage;
 import com.example.minitwitter.post.dto.PostCreateRequest;
+import com.example.minitwitter.post.dto.PostImageUploadResponse;
 import com.example.minitwitter.post.dto.PostResponse;
 import com.example.minitwitter.post.dto.TimelineResponse;
 import com.example.minitwitter.post.exception.InvalidTimelineSizeException;
 import com.example.minitwitter.post.exception.PostAccessDeniedException;
+import com.example.minitwitter.post.exception.PostImageLimitExceededException;
 import com.example.minitwitter.post.exception.PostNotFoundException;
+import com.example.minitwitter.post.repository.PostImageRepository;
 import com.example.minitwitter.post.repository.PostRepository;
+import com.example.minitwitter.storage.dto.UploadedFileResponse;
+import com.example.minitwitter.storage.service.StorageService;
 import com.example.minitwitter.user.domain.User;
 import com.example.minitwitter.user.exception.UserNotFoundException;
 import com.example.minitwitter.user.repository.UserRepository;
@@ -26,7 +34,9 @@ import lombok.RequiredArgsConstructor;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final PostImageRepository postImageRepository;
     private final UserRepository userRepository;
+    private final StorageService storageService;
 
     @Transactional
     public PostResponse createPost(Long authorId, PostCreateRequest request) {
@@ -37,6 +47,62 @@ public class PostService {
         Post savedPost = postRepository.save(post);
 
         return toResponse(savedPost);
+    }
+
+    @Transactional
+    public PostImageUploadResponse uploadPostImages(
+        Long postId,
+        Long currentUserId,
+        List<MultipartFile> files
+    ){
+        Post post = getPostByIdWithAuthorOrThrow(postId);
+
+        if(!post.isAuthor(currentUserId)){
+            throw new PostAccessDeniedException(postId, currentUserId);
+        }
+
+        if(files == null || files.isEmpty()){
+            return new PostImageUploadResponse(
+                postId,
+                postImageRepository.findByPostIdOrderByDisplayOrderAsc(postId)
+                    .stream()
+                    .map(PostImage::getImageUrl)
+                    .toList()
+            );
+        }
+
+        long currentCount = postImageRepository.countByPostId(postId);
+
+        if(currentCount + files.size() > 4){
+            throw new PostImageLimitExceededException(postId);
+        }
+
+        List<PostImage> savedImages = new ArrayList<>();
+        int displayOrder = (int)currentCount;
+
+        for(MultipartFile file : files){
+            UploadedFileResponse uploadedFile = storageService.uploadImage(
+                file,
+                "post/" + postId, 
+                5 * 1024 * 1024);
+            
+            PostImage postImage = new PostImage(
+                post,
+                uploadedFile.url(),
+                uploadedFile.objectKey(),
+                displayOrder
+            );
+            
+            savedImages.add(postImageRepository.save(postImage));
+            displayOrder++;
+        }
+
+        List<String> imageUrls = postImageRepository.findByPostIdOrderByDisplayOrderAsc(postId)
+            .stream()
+            .map(PostImage::getImageUrl)
+            .toList();
+
+        return new PostImageUploadResponse(postId, imageUrls);
     }
 
     public List<PostResponse> getPosts() {
@@ -156,11 +222,18 @@ public class PostService {
     }
 
     private PostResponse toResponse(Post post) {
+        List<String> imageUrls = postImageRepository.findByPostIdOrderByDisplayOrderAsc(post.getId())
+            .stream()
+            .map(PostImage::getImageUrl)
+            .toList();
+
+
         return new PostResponse(
                 post.getId(),
                 post.getAuthor().getId(),
                 post.getAuthor().getNickName(),
                 post.getContent(),
+                imageUrls,
                 post.getLikeCount(),
                 post.getCreatedAt(),
                 post.getUpdatedAt());

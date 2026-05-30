@@ -140,4 +140,11 @@ public class GlobalExceptionHandler {
                                 exception.getMessage());
         }
 
+        @ResponseStatus(HttpStatus.BAD_REQUEST)
+        @ExceptionHandler(PostImageLimitExceededException.class)
+        public ErrorResponse handlePostImageLimitExceeded(PostImageLimitExceededException exception) {
+                return ErrorResponse.of(
+                                "POST_IMAGE_LIMIT_EXCEEDED",
+                                exception.getMessage());
+        }
 }

@@ -3,14 +3,17 @@ package com.example.minitwitter.me.controller;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.minitwitter.auth.security.CurrentUser;
 import com.example.minitwitter.post.dto.PostResponse;
 import com.example.minitwitter.post.dto.TimelineResponse;
 import com.example.minitwitter.post.service.PostService;
 import com.example.minitwitter.user.dto.MeResponse;
+import com.example.minitwitter.user.dto.ProfileImageResponse;
 import com.example.minitwitter.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,7 +28,12 @@ public class MeController {
     private final CurrentUser currentUser;
     private final UserService userService;
     private final PostService postService;
-    
+
+    @PostMapping("/profile-image")
+    public ProfileImageResponse updateProfileImage(@RequestParam("file") MultipartFile file){
+        Long currentUserId = currentUser.getId();
+        return userService.updateProfileImageResponse(currentUserId, file);
+    }
     
 
     @GetMapping
