@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.example.minitwitter.user.exception.*;
 import com.example.minitwitter.post.exception.*;
+import com.example.minitwitter.storage.exception.StorageException;
 import com.example.minitwitter.auth.exception.InvalidLoginException;
 import com.example.minitwitter.follow.exception.*;
 import com.example.minitwitter.like.exception.DuplicatePostLikeException;
@@ -130,4 +131,13 @@ public class GlobalExceptionHandler {
                                 "POST_LIKE_NOT_FOUND",
                                 exception.getMessage());
         }
+
+        @ResponseStatus(HttpStatus.BAD_REQUEST)
+        @ExceptionHandler(StorageException.class)
+        public ErrorResponse handleStorage(StorageException exception) {
+                return ErrorResponse.of(
+                                "STORAGE_ERROR",
+                                exception.getMessage());
+        }
+
 }
